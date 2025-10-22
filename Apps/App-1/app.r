@@ -1,33 +1,24 @@
-library(tidyverse)
-library(visdat)
 library(shiny)
 library(bslib)
+library(datasets)
 
-setwd("C:/Users/awsmilor/Git/Ward Lab/SBC-Analysis/Data/Champaign")
+# Data pre-processing ----
+# Tweak the "am" variable to have nicer factor labels -- since this
+# doesn't rely on any user inputs, we can do this once at startup
+# and then use the value throughout the lifetime of the app
+mpgData <- mtcars
+mpgData$am <- factor(mpgData$am, labels = c("Automatic", "Manual"))
 
-#Create and object that lists all file names
-files <- list.files()
-names(files) = files
-#read in all CSV files with the names in the corresponding object
-csvs <- lapply(files, function(f) {
-  read_csv(f, col_types = cols(Date = col_character()))
-})
-
-# Data Preparation
-temp <- read.csv("./Champaign_FINAL.csv")
-
-crows <- Champaign %>% 
-  filter()
 
 # Define UI for miles per gallon app ----
 ui <- page_sidebar(
-  
+
   # App title ----
-  title = "Crows",
-  
+  title = "Miles Per Gallon",
+
   # Sidebar panel for inputs ----
   sidebar = sidebar(
-    
+
     # Input: Selector for variable to plot against mpg ----
     selectInput(
       "variable",
@@ -38,33 +29,33 @@ ui <- page_sidebar(
         "Gears" = "gear"
       )
     ),
-    
+
     # Input: Checkbox for whether outliers should be included ----
     checkboxInput("outliers", "Show outliers", TRUE)
   ),
-  
+
   # Output: Formatted text for caption ----
   h3(textOutput("caption")),
-  
+
   # Output: Plot of the requested variable against mpg ----
   plotOutput("mpgPlot")
 )
 
 # Define server logic to plot various variables against mpg ----
 server <- function(input, output) {
-  
+
   # Compute the formula text ----
   # This is in a reactive expression since it is shared by the
   # output$caption and output$mpgPlot functions
   formulaText <- reactive({
     paste("mpg ~", input$variable)
   })
-  
+
   # Return the formula text for printing as a caption ----
   output$caption <- renderText({
     formulaText()
   })
-  
+
   # Generate a plot of the requested variable against mpg ----
   # and only exclude outliers if requested
   output$mpgPlot <- renderPlot({
