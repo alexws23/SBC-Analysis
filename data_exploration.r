@@ -1,7 +1,5 @@
 library(tidyverse)
 library(visdat)
-library(shiny)
-library(bslib)
 
 ############ To-do:
 ############ 1. Pivot Bird data to have a row for counties instead of separate columns for each county
@@ -80,105 +78,14 @@ tree_il <- tree_us %>%
   select(-c(county, year))
 
 
-
-
 ##### Merge Datasets
+### Merge the soil temperature and growing degree days data with the SBC data
 merge <- left_join(SBC, temp, by = join_by(countyyear)) %>% 
-    filter(year >1980)
+    filter(year >1980) #Filter to exclude years without growing degree data
 
+### Write a CSV with this information
 merge %>% 
   write.csv(file = "SBC_GDD.csv")
 
-merge %>% 
-  select(c(Common_Name,SCI_NAME)) %>% 
-  distinct(Common_Name) %>% 
-  write.csv(file = "SBC_species.csv")
-
+### Add in tree cover loss data (optional)
 merge_all <- left_join(merge, tree_il, by = join_by(countyyear))
-
-vis_dat(slice_sample(merge, n = 2000))
-
-vis <- merge %>% 
-  filter(is.na(avg_tmean_100))
-
-unique(vis$county)
-  
-SBC %>% 
-  filter(Common_Name == "Sora") %>% 
-  group_by(year) %>%
-  drop_na() %>% 
-  summarise(
-    Count = mean(Count)
-    #avg_tmean_100 = mean(avg_tmean_100)
-  ) %>% 
-  ggplot(aes(x = year)) +
-  geom_point(aes(y = Count)) +
-  geom_smooth(aes(y = Count), method = "loess") +
-  theme_minimal()
-
-Model <-  glm(Count ~ avg_tmean_25+ GGD_1_25 + GGD_2_25 + total_precip_25, family = "gaussian", data = merge %>% filter(Common_Name == "Dark-eyed Junco"))
-summary(Model)
-
-  
-  ##########################
-# Define UI for miles per gallon app ----
-ui <- page_sidebar(
-  
-  # App title ----
-  title = "Spring Bird Count Trent",
-  
-  # Sidebar panel for inputs ----
-  sidebar = sidebar(
-    
-    # Input: Selector for variable to plot against mpg ----
-    selectInput(
-      "variable",
-      "Variable:",
-      c(
-        "Average Max Temp" = "",
-        "Average Min Temp" = "avg_tmin_25",
-        "Precipitation" = "total_precip_25"
-      )
-    ),
-    
-    # Input: Checkbox for whether outliers should be included ----
-    checkboxInput("outliers", "Show outliers", TRUE)
-  ),
-  
-  # Output: Formatted text for caption ----
-  h3(textOutput("caption")),
-  
-  # Output: Plot of the requested variable against mpg ----
-  plotOutput("crowPlot")
-)
-
-# Define server logic to plot various variables against mpg ----
-server <- function(input, output) {
-  
-  # Compute the formula text ----
-  # This is in a reactive expression since it is shared by the
-  # output$caption and output$mpgPlot functions
-  formulaText <- reactive({
-    paste("mpg ~", input$variable)
-  })
-  
-  # Return the formula text for printing as a caption ----
-  output$caption <- renderText({
-    formulaText()
-  })
-  
-  # Generate a plot of the requested variable against mpg ----
-  # and only exclude outliers if requested
-  output$crowPlot <- renderPlot({
-    boxplot(
-      as.formula(formulaText()),
-      data = mpgData,
-      outline = input$outliers,
-      col = "#75AADB",
-      pch = 19
-    )
-  })
-}
-
-# Create Shiny app ----
-shinyApp(ui, server)
