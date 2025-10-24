@@ -1,6 +1,8 @@
 library(tidyverse)
 library(degday)
 
+setwd("C:/Users/awsmilor/Git/Ward Lab/SBC-Analysis/Data")
+
 # Read the SBC dates and filter years
 SBC_dates <- read.csv("date of SBC.csv", header = TRUE, sep = ",") %>%
   filter(Year > 1980)
@@ -10,7 +12,7 @@ thresh_low <- 50
 thresh_up <- 100
 
 # Get all county data files in the working directory that match the pattern "_2.csv"
-data_files <- list.files(pattern = "_2\\.csv$")
+data_files <- list.files(pattern = "_2\\.csv$", path = "./Raw Data")
 
 # Create an empty list to store final results for all counties
 final_all_counties <- list()
@@ -26,7 +28,7 @@ for (file in data_files) {
   file_name <- paste0(county_name, "_FINAL.csv")
   
   # Read in the data
-  data <- read.csv(file, header = TRUE, sep = ",")
+  data <- read.csv(paste0("./Raw Data/",file), header = TRUE, sep = ",")
   
   # Calculate GDD metrics
   data_2 <- data %>%
