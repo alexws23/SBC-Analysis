@@ -21,6 +21,8 @@ species <- c("Yellow-rumped Warbler", "Swainson's Thrush", "Veery", "White-throa
              "Dark-eyed Junco", "Tennessee Warbler", "Magnolia Warbler", "Bay-breasted Warbler",
              "Blackpoll Warbler", "Ruby-crowned Kinglet")
 
+species <- c("Eastern Towhee", "Brown Thrasher")
+
 Variable <- c("GGD_1_25", "GGD_1_50", "GGD_1_100", "GGD_2_25", "GGD_2_50", "GGD_2_100")
 
 for (i in species) {
