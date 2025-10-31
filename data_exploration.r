@@ -1,12 +1,13 @@
 library(tidyverse)
 library(visdat)
 
+"%ni%" = Negate("%in%")
+
 ############ To-do:
 ############ 1. Pivot Bird data to have a row for counties instead of separate columns for each county
 ############ 2. Make a shiny app that allows you to see the population trend overtime for any species.
 ############ 3. Maybe consider adding growing degrees data
 ############ 4. Run GLMS to see if the growing degree data has any effect (would suggest earlier migration of things like DEJU)
-
 
 setwd("C:/Users/awsmilor/Git/Ward Lab/SBC-Analysis/Data")
 
@@ -20,13 +21,13 @@ temp <- read.csv("./AllCounties_FINAL.csv") %>%
 ##### Read in the SBC bird data
 df <- read.csv("./SBC_Data_PH_2024.csv") %>% 
   rename(DeKalb = De.Kalb,
-         DeWitt = De.Witt,
-         Dupage = Du.Page,
-         'StClair' = St..Clair,
-         'RockIsland' = Rock.Island,
-         'JoDaviess' = Jo.Daviess,
-         LaSalle = La.Salle,
-         Vermillion = Vermilion)
+         'De Witt' = De.Witt,
+         DuPage = Du.Page,
+         'St. Clair' = St..Clair,
+         'Rock Island' = Rock.Island,
+         'Jo Daviess' = Jo.Daviess,
+         'La Salle' = La.Salle,
+         Vermilion = Vermilion)
 
 # Pivot and clean the SBC data
 SBC <- df %>%
@@ -81,11 +82,17 @@ tree_il <- tree_us %>%
 ##### Merge Datasets
 ### Merge the soil temperature and growing degree days data with the SBC data
 merge <- left_join(SBC, temp, by = join_by(countyyear)) %>% 
-    filter(year >1980) #Filter to exclude years without growing degree data
+    filter(year > 1972)  #Filter to exclude years without growing degree data
 
 ### Write a CSV with this information
 merge %>% 
   write.csv(file = "SBC_GDD.csv")
+
+vis_dat(slice_sample(merge, n = 10000))
+
+unique(SBC$county)
+
+unique(temp$county)
 
 ### Add in tree cover loss data (optional)
 merge_all <- left_join(merge, tree_il, by = join_by(countyyear))
