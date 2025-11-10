@@ -12,9 +12,8 @@ library(visdat)
 setwd("C:/Users/awsmilor/Git/Ward Lab/SBC-Analysis/Data")
 
 # Data Preparation
-##### Read in soil temperature for all counties in illinois.
-##### !!!!!!!! Missing Douglas County and 2024 soil temp data for Champaign
-temp <- read.csv("./AllCounties_FINAL.csv") %>% 
+##### Read in temperature for all counties in illinois.
+temp <- read.csv("./GDD_Final/AllCounties_FINAL.csv") %>% 
   mutate(countyyear = paste0(county, " ",year)) %>% 
   select(-c(year, county))
 
@@ -42,12 +41,44 @@ SBC <- df %>%
          county = County) %>% 
   mutate(countyyear = paste0(county, " ",year))
 
-##### Read in county specific data on tree cover loss in the US for each year since 2001 from Global Forest Watch
-tree_us <- read.csv("./tree_cover_loss.csv")
+df_2025 <- read.csv("./SBC_Data_2025.csv") %>% 
+  rename(DeKalb = De.Kalb,
+         'De Witt' = De.Witt,
+         DuPage = Du.Page,
+         'St. Clair' = St..Clair,
+         'Rock Island' = Rock.Island,
+         'Jo Daviess' = Jo.Daviess,
+         'La Salle' = La.Salle,
+         Vermilion = Vermilion)
 
-colnames(tree_us) <- gsub("tc_loss_ha_", "", colnames(tree_us))
+SBC_2025 <- df_2025 %>%
+  pivot_longer(
+    cols = Adams:Woodford,              # all county columns
+    names_to = "County",                # new column name for counties
+    values_to = "Count"                 # new column name for counts
+  ) %>%
+  select(Common_Name, County, Count, Year) %>%   # reorder columns
+  arrange(Common_Name, County) %>%          # tidy ordering'
+  rename(year = Year,
+         county = County) %>% 
+  mutate(countyyear = paste0(county, " ",year))
 
-x <- 1:15
+SBC <- bind_rows(SBC, SBC_2025)
+
+##### Merge Datasets
+### Merge the  temperature and growing degree days data with the SBC data
+merge <- left_join(SBC, temp, by = join_by(countyyear)) %>% 
+    filter(year > 1972)  #Filter to exclude years without growing degree data
+
+### Write a CSV with this information
+merge %>% 
+  write.csv(file = "SBC_GDD.csv")
+
+vis_dat(slice_sample(merge, n = 10000))
+
+unique(SBC$county)
+
+unique(temp$county)
 
 # Pivot and clean the SBC data
 tree_il <- tree_us %>%
@@ -78,21 +109,13 @@ tree_il <- tree_us %>%
   mutate(countyyear = paste0(county, " ",year)) %>% 
   select(-c(county, year))
 
+##### Read in county specific data on tree cover loss in the US for each year since 2001 from Global Forest Watch
+tree_us <- read.csv("./tree_cover_loss.csv")
 
-##### Merge Datasets
-### Merge the soil temperature and growing degree days data with the SBC data
-merge <- left_join(SBC, temp, by = join_by(countyyear)) %>% 
-    filter(year > 1972)  #Filter to exclude years without growing degree data
+colnames(tree_us) <- gsub("tc_loss_ha_", "", colnames(tree_us))
 
-### Write a CSV with this information
-merge %>% 
-  write.csv(file = "SBC_GDD.csv")
+x <- 1:15
 
-vis_dat(slice_sample(merge, n = 10000))
-
-unique(SBC$county)
-
-unique(temp$county)
 
 ### Add in tree cover loss data (optional)
 merge_all <- left_join(merge, tree_il, by = join_by(countyyear))
