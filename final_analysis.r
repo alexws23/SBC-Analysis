@@ -77,9 +77,9 @@ SBC_final <- SBC_final %>%
 SBC_final <- SBC_final %>% 
   arrange(countyyear) %>% 
   mutate(class = latitude) %>% 
-  mutate(class = ifelse(class > 41, 3, class),
-         class = ifelse(class > 39, 2, class),
-         class = ifelse(class >37, 1, class))
+  mutate(class = ifelse(class > 40.6625933334, 3, class),
+         class = ifelse(class > 38.8165766667, 2, class),
+         class = ifelse(class >36.970560, 1, class))
 
 test <- SBC_final %>% 
   filter(Common_Name == "Veery")
@@ -96,19 +96,21 @@ filtered_data <- SBC_final %>%
   
 species <- unique(filtered_data$Common_Name) #If you want to run the loop for all species
 
+species <- unique(head$Common_Name)
+
 #### Create a list of species of interest for data visualization and exploration purposes
-species <- c("Yellow-rumped Warbler", "Swainson's Thrush", "Veery", "White-throated Sparrow",
-             "Dark-eyed Junco", "Tennessee Warbler", "Magnolia Warbler", "Bay-breasted Warbler",
-             "Blackpoll Warbler", "Ruby-crowned Kinglet","Eastern Towhee", "Brown Thrasher", "Chimney Swift", "White-breasted Nuthatch",
-             "American Robin", "Wilson's Snipe", "Palm Warbler", "Black-capped Chickadee", "Carolina Chickadee", "Lincoln's Sparrow", "Mourning Warbler",
-             "Northern Cardinal", "Prothonotary Warbler", "Nashville Warbler", "Yellow-throated Warbler", "House Wren", "Yellow-billed Cuckoo", "Gray-cheeked Thrush",
-             "Eastern Wood-Pewee", "Northern Waterthrush", "Bobolink", "Dickcissel",
-             "Least Sandpiper", "Semipalmated Plover", "Semipalmated Sandpiper", "Dunlin", "Lesser Yellowlegs", "Rose-breasted Grosbeak",
-             "Northern Shoveler", "Blue-winged Teal", "Green-winged Teal", "Eastern Kingbird", "Common Nighthawk", "Purple Finch",
-             "Red-breasted Nuthatch", "Eastern Bluebird", "Hermit Thrush", "Willow Flycatcher", "Least Flycatcher", "Song Sparrow", "Swamp Sparrow", "Vesper Sparrow",
-             "Hooded Warbler", "Kentucky Warbler", "Worm-eating Warbler", "Northern Parula", "Orange-crowned Warbler", "Golden-winged Warbler", "Blue-winged Warbler",
-             "Ovenbird", "Ruby-throated Hummingbird", "Chestnut-sided Warbler", "Cerulean Warbler", "Chipping Sparrow", "Common Yellowthroat", "American Redstart",
-             "American Goldfinch", "Field Sparrow", "Cape May Warbler", "Canada Warbler", "Carolina Wren")
+#species <- c("Yellow-rumped Warbler", "Swainson's Thrush", "Veery", "White-throated Sparrow",
+#             "Dark-eyed Junco", "Tennessee Warbler", "Magnolia Warbler", "Bay-breasted Warbler",
+#             "Blackpoll Warbler", "Ruby-crowned Kinglet","Eastern Towhee", "Brown Thrasher", "Chimney Swift", "White-breasted Nuthatch",
+#             "American Robin", "Wilson's Snipe", "Palm Warbler", "Black-capped Chickadee", "Carolina Chickadee", "Lincoln's Sparrow", "Mourning Warbler",
+#             "Northern Cardinal", "Prothonotary Warbler", "Nashville Warbler", "Yellow-throated Warbler", "House Wren", "Yellow-billed Cuckoo", "Gray-cheeked Thrush",
+#             "Eastern Wood-Pewee", "Northern Waterthrush", "Bobolink", "Dickcissel",
+#             "Least Sandpiper", "Semipalmated Plover", "Semipalmated Sandpiper", "Dunlin", "Lesser Yellowlegs", "Rose-breasted Grosbeak",
+#             "Northern Shoveler", "Blue-winged Teal", "Green-winged Teal", "Eastern Kingbird", "Common Nighthawk", "Purple Finch",
+#             "Red-breasted Nuthatch", "Eastern Bluebird", "Hermit Thrush", "Willow Flycatcher", "Least Flycatcher", "Song Sparrow", "Swamp Sparrow", "Vesper Sparrow",
+#             "Hooded Warbler", "Kentucky Warbler", "Worm-eating Warbler", "Northern Parula", "Orange-crowned Warbler", "Golden-winged Warbler", "Blue-winged Warbler",
+#             "Ovenbird", "Ruby-throated Hummingbird", "Chestnut-sided Warbler", "Cerulean Warbler", "Chipping Sparrow", "Common Yellowthroat", "American Redstart",
+#             "American Goldfinch", "Field Sparrow", "Cape May Warbler", "Canada Warbler", "Carolina Wren")
 
 ######################
 ##### For loop for final plots
@@ -121,12 +123,12 @@ for (i in species) {
     filter(Common_Name == i) %>% 
     group_by(year, class) %>% 
     summarise(mean = mean(Count),
-              GGD_1_25_mean = mean(GGD_1_25)) %>% 
+              GGD_1_50_mean = mean(GGD_1_50)) %>% 
     ungroup()
   
   
   plot <- sub %>% 
-    ggplot(aes(x = GGD_1_25_mean, y = mean, color = class)) +
+    ggplot(aes(x = GGD_1_50_mean, y = mean, color = class)) +
     geom_point() +
     geom_smooth(method = "gam", color = "indianred") +
     theme_minimal() +
@@ -136,7 +138,7 @@ for (i in species) {
   message("Plot 1 created")
   
   plot2 <- sub %>% 
-    ggplot(aes(x = year, y = GGD_1_25_mean, color = class)) +
+    ggplot(aes(x = year, y = GGD_1_50_mean, color = class)) +
     geom_point() +
     geom_line() +
     geom_smooth(method = "gam", color = "indianred", se = F) +
@@ -146,7 +148,7 @@ for (i in species) {
   message("Plot 2 created")
   
   plot3 <- sub %>% 
-    ggplot(aes(x = year, y = mean, color = GGD_1_25_mean)) +
+    ggplot(aes(x = year, y = mean, color = GGD_1_50_mean)) +
     geom_point() +
     geom_line() +
     geom_smooth(method = "gam", color = "indianred", se = F) +
@@ -160,7 +162,7 @@ for (i in species) {
   gam_stats <- sub %>%
     group_by(class) %>%
     group_modify(~{
-      m <- gam(mean ~ s(GGD_1_25_mean), data = .x)
+      m <- gam(mean ~ s(GGD_1_50_mean), data = .x)
       s <- summary(m)
       
       tibble(
@@ -182,7 +184,7 @@ for (i in species) {
   
   final_plot <- plot / plot2 / plot3 / stats_plot
   
-  ggsave(paste0("GAM_",i,".png"), final_plot, width = 10, height = 12, dpi = 300, path = "C:/Users/awsmilor/Git/Ward Lab/SBC-Analysis/Imgs/GAM_Plots", create.dir = TRUE)
+  ggsave(paste0("GAM_",i,".png"), final_plot, width = 10, height = 12, dpi = 300, path = "C:/Users/awsmilor/Git/Ward Lab/SBC-Analysis/Imgs/GAM_Plots_top50", create.dir = TRUE)
   message(i, " Done")
   
 }
