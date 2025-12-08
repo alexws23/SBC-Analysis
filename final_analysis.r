@@ -77,9 +77,21 @@ SBC_final <- SBC_final %>%
 SBC_final <- SBC_final %>% 
   arrange(countyyear) %>% 
   mutate(class = latitude) %>% 
-  mutate(class = ifelse(class > 40.6625933334, 3, class),
-         class = ifelse(class > 38.8165766667, 2, class),
-         class = ifelse(class >36.970560, 1, class))
+  mutate(class = ifelse(latitude > 40.6625933334 & longitude > -88.8350926666, "Northeast", class),
+         class = ifelse(latitude > 40.6625933334 & longitude > -90.1740743333 & longitude < -88.8350926666, "Northcentral", class),
+         class = ifelse(latitude > 40.6625933334 & longitude > -91.513056 & longitude < -90.1740743333, "Northwest", class),
+         class = ifelse(latitude > 38.8165766667 & longitude > -88.8350926666 & latitude < 40.6625933334, "Centereast", class),
+         class = ifelse(latitude > 38.8165766667 & longitude > -90.1740743333 & latitude < 40.6625933334 & longitude < -88.8350926666, "Center", class),
+         class = ifelse(latitude > 38.8165766667 & longitude > -91.513056 & latitude < 40.6625933334 & longitude < -90.1740743333, "Centerwest", class),
+         class = ifelse(latitude > 36.970560 & longitude > -88.8350926666 & latitude < 38.8165766667, "Southeast", class),
+         class = ifelse(latitude > 36.970560 & longitude > -90.1740743333 & latitude < 38.8165766667 & longitude < -88.8350926666, "Southcentral", class),
+         class = ifelse(latitude > 36.970560 & longitude > -91.513056 & latitude < 38.8165766667 & longitude < -90.1740743333, "Southwest", class),
+         #class = ifelse(latitude > 40.6625933334, 3, class),
+         #class = ifelse(class > 38.8165766667, 2, class),
+         #class = ifelse(class >36.970560, 1, class)
+         )
+
+unique(SBC_final$class)
 
 test <- SBC_final %>% 
   filter(Common_Name == "Veery")
@@ -95,8 +107,6 @@ filtered_data <- SBC_final %>%
   ungroup()
   
 species <- unique(filtered_data$Common_Name) #If you want to run the loop for all species
-
-species <- unique(head$Common_Name)
 
 #### Create a list of species of interest for data visualization and exploration purposes
 #species <- c("Yellow-rumped Warbler", "Swainson's Thrush", "Veery", "White-throated Sparrow",
